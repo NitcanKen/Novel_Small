@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小说生成系统</title>
+    <link rel="stylesheet" href="style.css">
+        <style>
+        /* 新增的赞赏区域样式 */
+        .donate-section {
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border-top: 3px solid #6c757d;
+            text-align: center;
+        }
+
+        .donate-section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .donate-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .donate-text {
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            color: #6c757d;
+        }
+
+        .qr-codes {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+        }
+
+        .qr-item {
+            text-align: center;
+        }
+
+        .qr-item img {
+            width: 300px;
+            height: 300px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 5px;
+            background: white;
+        }
+
+        .qr-label {
+            margin-top: 8px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .donate-note {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #868e96;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>小说生成系统</h1>
+            <nav class="tabs">
+                <button class="tab-btn active" data-tab="template">📝 模版管理</button>
+                <button class="tab-btn" data-tab="generate">✨ 小说生成</button>
+            </nav>
+        </header>
+
+        <!-- 模版管理 -->
+        <div id="template" class="tab-content active">
+            <div class="template-section">
+                <div class="template-list">
+                    <h3>📋 模版列表</h3>
+                    <div class="template-selector">
+                        <select id="templateSelect">
+                            <option value="">选择模版...</option>
+                        </select>
+                        <button id="newTemplateBtn">➕ 新建模版</button>
+                    </div>
+                    <div id="templateInfo" class="template-info"></div>
+                </div>
+
+                <div class="template-editor">
+                    <h3>✏️ 模版编辑</h3>
+                    <div class="template-meta">
+                        <input type="text" id="templateId" placeholder="模版ID (如: 001)" maxlength="3">
+                        <input type="text" id="templateName" placeholder="模版名称">
+                        <input type="text" id="templateCategory" placeholder="分类">
+                        <div class="word-count">
+                            <input type="number" id="minWords" placeholder="最小字数" min="1000">
+                            <span>-</span>
+                            <input type="number" id="maxWords" placeholder="最大字数" min="1000">
+                        </div>
+                    </div>
+
+                    <div class="prompt-editors">
+                        <div class="prompt-editor">
+                            <label>👤 角色定义 (writer_role.txt)</label>
+                            <textarea id="writerRole" placeholder="定义AI的身份、专业能力、写作风格..."></textarea>
+                        </div>
+
+                        <div class="prompt-editor">
+                            <label>📜 写作规则 (writing_rules.txt)</label>
+                            <textarea id="writingRules" placeholder="定义执行规则、约束条件、输出格式..."></textarea>
+                        </div>
+
+                        <div class="prompt-editor">
+                            <label>🔄 状态更新规则 (update_state_rules.txt)</label>
+                            <textarea id="updateStateRules" placeholder="指导AI如何更新角色状态JSON..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="template-actions">
+                        <button id="saveTemplateBtn" class="btn-primary">💾 保存模版</button>
+                        <button id="previewTemplateBtn" class="btn-secondary">👁️ 预览</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设定管理区 -->
+            <div class="settings-section">
+                <h2>⚙️ 设定管理</h2>
+
+                <div class="settings-config">
+                    <div class="config-group">
+                        <label>📖 小说ID:</label>
+                        <div class="novel-id-group">
+                            <input type="text" id="settingsNovelId" placeholder="输入小说ID (如: 003)" maxlength="20">
+                            <button id="loadSettingsBtn" class="btn-small">📂 加载设定</button>
+                        </div>
+                        <div id="settingsInfo" class="novel-info"></div>
+                    </div>
+
+                    <div class="settings-versions">
+                        <div class="version-group">
+                            <label>👤 人物设定版本:</label>
+                            <select id="characterVersionSelect">
+                                <option value="">选择版本...</option>
+                            </select>
+                            <button id="newCharacterBtn" class="btn-small">➕ 新建</button>
+                        </div>
+
+                        <div class="version-group">
+                            <label>🌍 世界设定版本:</label>
+                            <select id="worldVersionSelect">
+                                <option value="">选择版本...</option>
+                            </select>
+                            <button id="newWorldBtn" class="btn-small">➕ 新建</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-editors">
+                    <div class="settings-editor">
+                        <label>👤 人物设定 (Character State)</label>
+                        <textarea id="characterSettings" placeholder="人物设定JSON将显示在这里..."></textarea>
+                        <button id="saveCharacterBtn" class="btn-primary">💾 保存人物设定</button>
+                    </div>
+
+                    <div class="settings-editor">
+                        <label>🌍 世界设定 (World Bible)</label>
+                        <textarea id="worldSettings" placeholder="世界设定JSON将显示在这里..."></textarea>
+                        <button id="saveWorldBtn" class="btn-primary">💾 保存世界设定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 小说生成 -->
+    <div id="generate" class="tab-content">
+        <div class="generate-section">
+            <!-- 批量生成区域 -->
+            <div class="batch-generate">
+                <h2>✨ 小说生成</h2>
+                <div class="batch-config">
+                    <h3>⚙️ 批量配置</h3>
+
+                    <div class="config-group">
+                        <label>📖 小说ID:</label>
+                        <div class="novel-id-group">
+                            <input type="text" id="batchNovelId" placeholder="输入小说ID (如: 003)" maxlength="20">
+                            <button id="loadBatchNovelBtn" class="btn-small">📂 检测进度</button>
+                        </div>
+                        <div id="batchNovelInfo" class="novel-info"></div>
+                    </div>
+
+                    <div class="config-group">
+                        <label>🎭 选择模版:</label>
+                        <select id="batchTemplateSelect">
+                            <option value="">选择模版...</option>
+                        </select>
+                    </div>
+
+                    <div class="config-group">
+                        <label>🤖 选择模型:</label>
+                        <select id="batchModelSelect">
+                            <option value="deepseek_chat">DeepSeek Chat (默认)</option>
+                            <option value="deepseek_reasoner">DeepSeek Reasoner</option>
+                            <option value="dsf5">DSF5 (第三方API)</option>
+                            <option value="openai_gpt4">OpenAI GPT-4</option>
+                            <option value="openai_gpt35">OpenAI GPT-3.5</option>
+                            <option value="openrouter_gpt4o">OpenRouter GPT-4o</option>
+                        </select>
+                    </div>
+
+                    <div class="config-group">
+                        <label>🔄 更新设定模型:</label>
+                        <select id="batchUpdateModelSelect">
+                            <option value="">同生成模型</option>
+                            <option value="deepseek_chat">DeepSeek Chat</option>
+                            <option value="deepseek_reasoner">DeepSeek Reasoner</option>
+                            <option value="dsf5">DSF5 (第三方API)</option>
+                            <option value="openai_gpt4">OpenAI GPT-4</option>
+                            <option value="openai_gpt35">OpenAI GPT-3.5</option>
+                            <option value="openrouter_gpt4o">OpenRouter GPT-4o</option>
+                        </select>
+                        <small>状态更新时使用的模型（留空则使用生成模型）</small>
+                    </div>
+
+                    <div class="config-group">
+                        <label>⚙️ 生成设置:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" id="batchUseState" checked> 使用角色状态</label>
+                            <label><input type="checkbox" id="batchUseWorldBible" checked> 使用世界设定</label>
+                            <label><input type="checkbox" id="batchUpdateState"> 更新角色设定</label>
+                        </div>
+                    </div>
+
+                    <div class="config-group">
+                        <label>📖 是否读取前面章节:</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" id="batchUsePreviousChapters" checked> 读取前面章节内容。</label>
+                        </div>
+                        <div class="chapter-help">
+                            <small>
+                                💡 <strong>读取前面章节内容</strong>：生成时读取前面章节的最新文件内容，确保内容衔接一致
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="config-group">
+                        <label>📊 读取前面章节数量:</label>
+                        <input type="number" id="batchPreviousChaptersCount" value="1" min="1" max="10">
+                        <small>让AI记忆更连贯，（建议不超过2章，有些第三方API支持上下文较小）。</small>
+                    </div>
+
+
+
+                    <div class="config-group">
+                        <label>📊 生成章节数:</label>
+                        <input type="number" id="batchChapterCount" value="1" min="1" max="50" placeholder="要生成的章节数量">
+                        <small>系统将从当前进度开始，连续生成指定数量的章节</small>
+                    </div>
+                </div>
+
+                <div class="batch-progress">
+                    <h3>📈 生成进度</h3>
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                    <div id="progressText" class="progress-text">等待开始...</div>
+                    <div id="batchLog" class="batch-log"></div>
+    </div>
+
+                <div class="batch-actions">
+                    <button id="startBatchBtn" class="btn-primary">🚀 开始连续生成</button>
+                    <button id="stopBatchBtn" class="btn-danger" disabled>⏹️ 停止生成</button>
+                    <button id="manualUpdateStateBtn" class="btn-secondary">🔄 手动更新角色设定</button>
+                    <div id="batchStatus" class="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
